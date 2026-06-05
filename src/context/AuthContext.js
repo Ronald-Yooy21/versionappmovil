@@ -60,7 +60,16 @@ export const AuthProvider = ({ children }) => {
       setUser(null);
     }
   };
-
+  const refreshUser = async () => {
+    try {
+      const response = await api.get("/user");
+      const userData = response.data;
+      await AsyncStorage.setItem("@SGP:user", JSON.stringify(userData));
+      setUser(userData);
+    } catch (error) {
+      console.error("Error refrescando usuario:", error);
+    }
+  };
   const checkAuth = async () => {
     const token = await AsyncStorage.getItem("@SGP:token");
     const userData = await AsyncStorage.getItem("@SGP:user");
@@ -82,6 +91,7 @@ export const AuthProvider = ({ children }) => {
         login,
         logout,
         checkAuth,
+        refreshUser,
       }}
     >
       {children}

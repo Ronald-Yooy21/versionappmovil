@@ -5,21 +5,13 @@ import {
   StyleSheet,
   ScrollView,
   TouchableOpacity,
-  ActivityIndicator,
-  RefreshControl,
   Alert,
   Image,
+  RefreshControl,
+  ActivityIndicator,
 } from "react-native";
 import { useAuth } from "../../context/AuthContext";
 import api from "../../services/api";
-
-const KpiCard = ({ label, value, icon, color }) => (
-  <View style={[styles.kpiCard, { borderLeftColor: color }]}>
-    <Text style={styles.kpiValue}>{value}</Text>
-    <Text style={styles.kpiLabel}>{label}</Text>
-    <Text style={styles.kpiIcon}>{icon}</Text>
-  </View>
-);
 
 const QuickActionButton = ({ icon, label, onPress, color }) => (
   <TouchableOpacity style={styles.quickActionCard} onPress={onPress}>
@@ -32,38 +24,36 @@ const QuickActionButton = ({ icon, label, onPress, color }) => (
   </TouchableOpacity>
 );
 
-export default function DashboardGerenteScreen({ navigation }) {
+export default function DashboardPasanteScreen({ navigation }) {
   const { user, logout, refreshUser } = useAuth();
-  const [stats, setStats] = useState({
-    total_pasantias: 0,
-    total_pasantes: 0,
-    total_jefes: 0,
-    calificacion_promedio: 0,
-  });
-  const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
   const [menuVisible, setMenuVisible] = useState(false);
+  const [pasanteInfo, setPasanteInfo] = useState({
+    ru: "",
+    matricula: "",
+    semestre: "",
+    mencion: "",
+  });
+  const [loading, setLoading] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
 
-  const cargarEstadisticas = async () => {
+  const cargarDatosPasante = async () => {
     try {
-      const response = await api.get("/gerente/estadisticas");
-      setStats(response.data.kpis);
+      const response = await api.get("/pasante/info");
+      setPasanteInfo(response.data);
     } catch (error) {
-      console.error("Error cargando estadísticas:", error);
-    } finally {
-      setLoading(false);
+      console.error("Error cargando datos del pasante:", error);
     }
   };
 
   const onRefresh = async () => {
     setRefreshing(true);
-    await refreshUser(); // ← Actualizar datos del usuario
-    await cargarEstadisticas(); // ← Recargar estadísticas
+    await refreshUser(); // Actualiza el contexto
+    await cargarDatosPasante(); // Recarga datos del pasante
     setRefreshing(false);
   };
 
   useEffect(() => {
-    cargarEstadisticas();
+    cargarDatosPasante();
   }, []);
 
   const handleLogout = () => {
@@ -100,7 +90,7 @@ export default function DashboardGerenteScreen({ navigation }) {
             <Text style={styles.userName}>
               {user?.nombre} {user?.ap_paterno}
             </Text>
-            <Text style={styles.userRole}>Gerente de Empresa</Text>
+            <Text style={styles.userRole}>Pasante</Text>
           </View>
 
           <TouchableOpacity
@@ -153,76 +143,64 @@ export default function DashboardGerenteScreen({ navigation }) {
         )}
       </View>
 
-      {/* Tarjetas KPI */}
-      <View style={styles.kpiContainer}>
-        <KpiCard
-          label="Total Pasantías"
-          value={stats.total_pasantias}
-          icon="📋"
-          color="#2A5A8D"
-        />
-        <KpiCard
-          label="Total Pasantes"
-          value={stats.total_pasantes}
-          icon="👨‍🎓"
-          color="#3890BB"
-        />
-        <KpiCard
-          label="Total Jefes"
-          value={stats.total_jefes}
-          icon="👔"
-          color="#3C9087"
-        />
-        <KpiCard
-          label="Calificación Promedio"
-          value={`${stats.calificacion_promedio} ⭐`}
-          icon="⭐"
-          color="#F59E0B"
-        />
-      </View>
-
       {/* Accesos Rápidos */}
       <View style={styles.quickActionsContainer}>
         <Text style={styles.sectionTitle}>Accesos Rápidos</Text>
         <View style={styles.quickActionsGrid}>
           <QuickActionButton
-            icon="🏢"
-            label="Mi Empresa"
-            onPress={() => navigation.navigate("Empresa")}
+            icon="📝"
+            label="Inscribirse a Pasantía"
+            onPress={() => navigation.navigate("Inscribirse")}
             color="#2A5A8D"
           />
           <QuickActionButton
-            icon="📝"
-            label="Publicar Pasantía"
-            onPress={() => navigation.navigate("CrearPasantia")}
-            color="#3C9087"
-          />
-          <QuickActionButton
             icon="📋"
-            label="Pasantías Publicadas"
-            onPress={() => navigation.navigate("Pasantias")}
+            label="Pasantías Inscritas"
+            onPress={() => navigation.navigate("InscripcionesActivas")}
             color="#3890BB"
           />
           <QuickActionButton
-            icon="▶️"
-            label="Pasantías Iniciadas"
-            onPress={() => navigation.navigate("PasantiasActivas")}
-            color="#F59E0B"
+            icon="✅"
+            label="Inscripciones Finalizadas"
+            onPress={() => navigation.navigate("InscripcionesFinalizadas")}
+            color="#3C9087"
           />
           <QuickActionButton
-            icon="👥"
-            label="Lista de Jefes"
-            onPress={() => navigation.navigate("Jefes")}
+            icon="📅"
+            label="Mis Actividades"
+            onPress={() => navigation.navigate("Actividades")}
             color="#8B5CF6"
           />
+        </View>
+      </View>
+
+      {/* Información académica */}
+      <View style={styles.infoCard}>
+        <Text style={styles.infoTitle}>🎓 Información Académica</Text>
+
+        <View style={styles.infoRow}>
+          <Text style={styles.infoLabel}>Semestre:</Text>
+          <Text style={[styles.infoValue, styles.textFlexible]}>
+            {" "}
+            {pasanteInfo.semestre || "No registrado"}
+          </Text>
+        </View>
+
+        <View style={styles.infoRow}>
+          <Text style={styles.infoLabel}>Mención:</Text>
+          {/* Añadimos un contenedor flexible o aplicamos flex: 1 directamente al Text */}
+          <Text style={[styles.infoValue, styles.textFlexible]}>
+            {"  "}
+            {pasanteInfo.mencion || "No registrada"}
+          </Text>
         </View>
       </View>
     </ScrollView>
   );
 }
 
+// ... estilos (se mantienen igual que antes)
 const styles = StyleSheet.create({
-  // ... todos los estilos se mantienen igual que antes
   container: {
     flex: 1,
     backgroundColor: "#f5f5f5",
@@ -318,43 +296,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: "#dc2626",
   },
-  kpiContainer: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    justifyContent: "space-between",
-    paddingHorizontal: 16,
-    marginTop: -20,
-  },
-  kpiCard: {
-    backgroundColor: "#fff",
-    width: "48%",
-    padding: 16,
-    borderRadius: 12,
-    marginBottom: 12,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
-    elevation: 2,
-    borderLeftWidth: 4,
-  },
-  kpiValue: {
-    fontSize: 28,
-    fontWeight: "bold",
-    color: "#1a2a3a",
-  },
-  kpiLabel: {
-    fontSize: 12,
-    color: "#666",
-    marginTop: 4,
-  },
-  kpiIcon: {
-    fontSize: 24,
-    position: "absolute",
-    right: 12,
-    bottom: 12,
-    opacity: 0.3,
-  },
   quickActionsContainer: {
     padding: 16,
   },
@@ -398,5 +339,44 @@ const styles = StyleSheet.create({
     fontWeight: "500",
     color: "#333",
     textAlign: "center",
+  },
+  infoCard: {
+    backgroundColor: "#fff",
+    margin: 16,
+    marginTop: 8,
+    padding: 16,
+    borderRadius: 16,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  infoTitle: {
+    fontSize: 16,
+    fontWeight: "bold",
+    color: "#2A5A8D",
+    marginBottom: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: "#eee",
+    paddingBottom: 8,
+  },
+  infoRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    paddingVertical: 8,
+  },
+  infoLabel: {
+    fontSize: 14,
+    color: "#666",
+  },
+  infoValue: {
+    fontSize: 14,
+    fontWeight: "500",
+    color: "#333",
+  },
+  textFlexible: {
+    flex: 1, // 👈 ¡ESTA ES LA MAGIA! Fuerza al texto a quedarse dentro de los límites y saltar de línea
+    flexWrap: "wrap", // Opcional: refuerza el comportamiento de salto de línea
   },
 });

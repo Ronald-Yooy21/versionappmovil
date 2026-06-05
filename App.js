@@ -5,6 +5,7 @@ import { ActivityIndicator, View } from "react-native";
 import { AuthProvider, useAuth } from "./src/context/AuthContext";
 import LoginScreen from "./src/screens/auth/LoginScreen";
 import GerenteStack from "./src/navigation/GerenteStack";
+import PasanteStack from "./src/navigation/PasanteStack";
 
 const Stack = createStackNavigator();
 

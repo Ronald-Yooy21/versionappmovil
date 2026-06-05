@@ -14,8 +14,8 @@ import {
 import { useAuth } from "../../context/AuthContext";
 import api from "../../services/api";
 
-export default function PerfilGerenteScreen({ navigation }) {
-  const { user, refreshUser } = useAuth(); // ← agregar refreshUser
+export default function PerfilPasanteScreen({ navigation }) {
+  const { user, logout, refreshUser } = useAuth();
   const [loading, setLoading] = useState(false);
   const [editando, setEditando] = useState(false);
   const [form, setForm] = useState({
@@ -26,7 +26,10 @@ export default function PerfilGerenteScreen({ navigation }) {
     numero_cel: "",
     correo: "",
     fecha_nac: "",
-    nro_secun: "",
+    ru: "",
+    matricula: "",
+    semestre: "",
+    mencion: "",
   });
   const [originalForm, setOriginalForm] = useState({});
 
@@ -37,7 +40,7 @@ export default function PerfilGerenteScreen({ navigation }) {
   const cargarDatos = async () => {
     setLoading(true);
     try {
-      const response = await api.get("/gerente/perfil");
+      const response = await api.get("/pasante/perfil");
       const data = response.data;
       setForm({
         nombre: data.nombre || "",
@@ -47,7 +50,10 @@ export default function PerfilGerenteScreen({ navigation }) {
         numero_cel: data.numero_cel || "",
         correo: data.correo || "",
         fecha_nac: data.fecha_nac || "",
-        nro_secun: data.nro_secun || "",
+        ru: data.ru || "",
+        matricula: data.matricula || "",
+        semestre: data.semestre ? data.semestre.toString() : "",
+        mencion: data.mencion || "",
       });
       setOriginalForm({
         nombre: data.nombre || "",
@@ -57,7 +63,10 @@ export default function PerfilGerenteScreen({ navigation }) {
         numero_cel: data.numero_cel || "",
         correo: data.correo || "",
         fecha_nac: data.fecha_nac || "",
-        nro_secun: data.nro_secun || "",
+        ru: data.ru || "",
+        matricula: data.matricula || "",
+        semestre: data.semestre ? data.semestre.toString() : "",
+        mencion: data.mencion || "",
       });
     } catch (error) {
       console.error("Error cargando perfil:", error);
@@ -74,8 +83,8 @@ export default function PerfilGerenteScreen({ navigation }) {
   const guardarCambios = async () => {
     setLoading(true);
     try {
-      await api.put("/gerente/perfil", form);
-      await refreshUser(); // ← Actualizar contexto después de guardar
+      await api.put("/pasante/perfil", form);
+      await refreshUser(); // ← Actualiza el contexto con los nuevos datos
       Alert.alert("Éxito", "Perfil actualizado correctamente");
       setEditando(false);
       setOriginalForm({ ...form });
@@ -127,10 +136,10 @@ export default function PerfilGerenteScreen({ navigation }) {
           <Text style={styles.userName}>
             {user?.nombre} {user?.ap_paterno}
           </Text>
-          <Text style={styles.userRole}>Gerente de Empresa</Text>
+          <Text style={styles.userRole}>Pasante</Text>
         </View>
 
-        {/* Resto del formulario (igual que antes) */}
+        {/* Formulario */}
         <View style={styles.formContainer}>
           {/* Información Personal */}
           <View style={styles.section}>
@@ -213,18 +222,6 @@ export default function PerfilGerenteScreen({ navigation }) {
             </View>
 
             <View style={styles.field}>
-              <Text style={styles.label}>Celular Secundario</Text>
-              <TextInput
-                style={[styles.input, !editando && styles.inputDisabled]}
-                value={form.nro_secun}
-                onChangeText={(text) => handleChange("nro_secun", text)}
-                editable={editando}
-                placeholderTextColor="#999"
-                keyboardType="phone-pad"
-              />
-            </View>
-
-            <View style={styles.field}>
               <Text style={styles.label}>Correo Electrónico *</Text>
               <TextInput
                 style={[styles.input, !editando && styles.inputDisabled]}
@@ -235,6 +232,58 @@ export default function PerfilGerenteScreen({ navigation }) {
                 keyboardType="email-address"
                 autoCapitalize="none"
               />
+            </View>
+          </View>
+
+          {/* Información Académica */}
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>🎓 Información Académica</Text>
+
+            <View style={styles.row}>
+              <View style={styles.halfField}>
+                <Text style={styles.label}>RU (Registro Universitario) *</Text>
+                <TextInput
+                  style={[styles.input, !editando && styles.inputDisabled]}
+                  value={form.ru}
+                  onChangeText={(text) => handleChange("ru", text)}
+                  editable={editando}
+                  placeholderTextColor="#999"
+                />
+              </View>
+              <View style={styles.halfField}>
+                <Text style={styles.label}>Matrícula *</Text>
+                <TextInput
+                  style={[styles.input, !editando && styles.inputDisabled]}
+                  value={form.matricula}
+                  onChangeText={(text) => handleChange("matricula", text)}
+                  editable={editando}
+                  placeholderTextColor="#999"
+                />
+              </View>
+            </View>
+
+            <View style={styles.row}>
+              <View style={styles.halfField}>
+                <Text style={styles.label}>Semestre *</Text>
+                <TextInput
+                  style={[styles.input, !editando && styles.inputDisabled]}
+                  value={form.semestre}
+                  onChangeText={(text) => handleChange("semestre", text)}
+                  editable={editando}
+                  placeholderTextColor="#999"
+                  keyboardType="numeric"
+                />
+              </View>
+              <View style={styles.halfField}>
+                <Text style={styles.label}>Mención *</Text>
+                <TextInput
+                  style={[styles.input, !editando && styles.inputDisabled]}
+                  value={form.mencion}
+                  onChangeText={(text) => handleChange("mencion", text)}
+                  editable={editando}
+                  placeholderTextColor="#999"
+                />
+              </View>
             </View>
           </View>
 
