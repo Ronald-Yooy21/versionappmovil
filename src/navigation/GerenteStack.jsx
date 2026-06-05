@@ -2,8 +2,8 @@ import React from "react";
 import { createStackNavigator } from "@react-navigation/stack";
 import DashboardGerenteScreen from "../screens/gerente/DashboardGerenteScreen";
 import EmpresaScreen from "../screens/gerente/EmpresaScreen";
-//import PasantiasScreen from "../screens/gerente/PasantiasScreen";
-// import CrearPasantiaScreen from "../screens/gerente/CrearPasantiaScreen";
+import PasantiasScreen from "../screens/gerente/PasantiasScreen";
+import CrearPasantiaScreen from "../screens/gerente/CrearPasantiaScreen";
 // import PasantiasFinalizadasScreen from "../screens/gerente/PasantiasFinalizadasScreen";
 // import JefesScreen from "../screens/gerente/JefesScreen";
 // import SolicitudesJefesScreen from "../screens/gerente/SolicitudesJefesScreen";
@@ -32,16 +32,16 @@ export default function GerenteStack() {
         component={EmpresaScreen}
         options={{ title: "Mi Empresa" }}
       />
-      {/* <Stack.Screen
+      <Stack.Screen
         name="Pasantias"
         component={PasantiasScreen}
         options={{ title: "Pasantías" }}
-      /> */}
-      {/* <Stack.Screen
+      />
+      <Stack.Screen
         name="CrearPasantia"
         component={CrearPasantiaScreen}
         options={{ title: "Publicar Pasantía" }}
-      /> */}
+      />
       {/* <Stack.Screen
         name="PasantiasFinalizadas"
         component={PasantiasFinalizadasScreen}
