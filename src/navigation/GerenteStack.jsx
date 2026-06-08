@@ -4,12 +4,9 @@ import DashboardGerenteScreen from "../screens/gerente/DashboardGerenteScreen";
 import EmpresaScreen from "../screens/gerente/EmpresaScreen";
 import PasantiasScreen from "../screens/gerente/PasantiasScreen";
 import CrearPasantiaScreen from "../screens/gerente/CrearPasantiaScreen";
-// import PasantiasFinalizadasScreen from "../screens/gerente/PasantiasFinalizadasScreen";
-// import JefesScreen from "../screens/gerente/JefesScreen";
-// import SolicitudesJefesScreen from "../screens/gerente/SolicitudesJefesScreen";
+import JefesScreen from "../screens/gerente/JefesScreen";
 import PerfilGerenteScreen from "../screens/gerente/PerfilGerenteScreen";
 // import CuentaGerenteScreen from "../screens/gerente/CuentaGerenteScreen";
-//import PasantiasActivasScreen from '../screens/gerente/PasantiasActivasScreen';
 
 const Stack = createStackNavigator();
 
@@ -40,23 +37,13 @@ export default function GerenteStack() {
       <Stack.Screen
         name="CrearPasantia"
         component={CrearPasantiaScreen}
-        options={{ title: "Publicar Pasantía" }}
+        options={{ title: "Publicar Pasantia" }}
       />
-      {/* <Stack.Screen
-        name="PasantiasFinalizadas"
-        component={PasantiasFinalizadasScreen}
-        options={{ title: "Pasantías Finalizadas" }}
-      /> */}
-      {/* <Stack.Screen
+      <Stack.Screen
         name="Jefes"
         component={JefesScreen}
         options={{ title: "Jefes de Pasantes" }}
-      /> */}
-      {/* <Stack.Screen
-        name="SolicitudesJefes"
-        component={SolicitudesJefesScreen}
-        options={{ title: "Solicitudes de Registro" }}
-      /> */}
+      />
       <Stack.Screen
         name="Perfil"
         component={PerfilGerenteScreen}
@@ -66,11 +53,6 @@ export default function GerenteStack() {
         name="Cuenta"
         component={CuentaGerenteScreen}
         options={{ title: "Mi Cuenta" }}
-      /> */}
-      {/* <Stack.Screen
-        name="PasantiasActivas"
-        component={PasantiasActivasScreen}
-        options={{ title: "Pasantías Iniciadas" }}
       /> */}
     </Stack.Navigator>
   );

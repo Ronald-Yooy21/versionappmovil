@@ -204,12 +204,6 @@ export default function DashboardGerenteScreen({ navigation }) {
             color="#3890BB"
           />
           <QuickActionButton
-            icon="▶️"
-            label="Pasantías Iniciadas"
-            onPress={() => navigation.navigate("PasantiasActivas")}
-            color="#F59E0B"
-          />
-          <QuickActionButton
             icon="👥"
             label="Lista de Jefes"
             onPress={() => navigation.navigate("Jefes")}

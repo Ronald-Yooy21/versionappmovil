@@ -1,7 +1,7 @@
 import axios from "axios";
 
 // Reemplaza con tu IP local (la misma que usaste en Laravel)
-const API_BASE_URL = "http://192.168.1.2:8000/api/mobile";
+const API_BASE_URL = "http://192.168.1.3:8000/api/mobile";
 
 const api = axios.create({
   baseURL: API_BASE_URL,
