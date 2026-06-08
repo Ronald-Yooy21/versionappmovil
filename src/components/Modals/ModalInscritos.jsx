@@ -147,9 +147,9 @@ export default function ModalInscritos({
                       <Text style={styles.detalleText}>
                         📅 Fecha inscripción: {formatFecha(inscrito.fecha_insc)}
                       </Text>
-                      <Text style={styles.detalleText}>
+                      {/* <Text style={styles.detalleText}>
                         ⏰ Hora: {inscrito.hora_insc}
-                      </Text>
+                      </Text> */}
                       <Text style={styles.detalleText}>
                         📚 Matrícula: {inscrito.matricula}
                       </Text>
