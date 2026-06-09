@@ -9,20 +9,30 @@ import {
   Image,
   RefreshControl,
   ActivityIndicator,
+  StatusBar,
 } from "react-native";
 import { useAuth } from "../../context/AuthContext";
 import api from "../../services/api";
+import NotificationBell from "../../components/NotificationBell";
+
+// --- Componentes ---
 
 const QuickActionButton = ({ icon, label, onPress, color }) => (
-  <TouchableOpacity style={styles.quickActionCard} onPress={onPress}>
+  <TouchableOpacity
+    style={styles.quickActionCard}
+    onPress={onPress}
+    activeOpacity={0.7}
+  >
     <View
-      style={[styles.quickActionIconCircle, { backgroundColor: color + "15" }]}
+      style={[styles.quickActionIconCircle, { backgroundColor: `${color}15` }]}
     >
       <Text style={styles.quickActionIcon}>{icon}</Text>
     </View>
     <Text style={styles.quickActionText}>{label}</Text>
   </TouchableOpacity>
 );
+
+// --- Pantalla Principal ---
 
 export default function DashboardPasanteScreen({ navigation }) {
   const { user, logout, refreshUser } = useAuth();
@@ -47,8 +57,8 @@ export default function DashboardPasanteScreen({ navigation }) {
 
   const onRefresh = async () => {
     setRefreshing(true);
-    await refreshUser(); // Actualiza el contexto
-    await cargarDatosPasante(); // Recarga datos del pasante
+    await refreshUser();
+    await cargarDatosPasante();
     setRefreshing(false);
   };
 
@@ -59,12 +69,7 @@ export default function DashboardPasanteScreen({ navigation }) {
   const handleLogout = () => {
     Alert.alert("Cerrar Sesión", "¿Estás seguro de que deseas salir?", [
       { text: "Cancelar", style: "cancel" },
-      {
-        text: "Sí, cerrar sesión",
-        onPress: async () => {
-          await logout();
-        },
-      },
+      { text: "Sí, cerrar sesión", onPress: async () => await logout() },
     ]);
   };
 
@@ -77,74 +82,80 @@ export default function DashboardPasanteScreen({ navigation }) {
   }
 
   return (
-    <ScrollView
-      style={styles.container}
-      refreshControl={
-        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-      }
-    >
-      {/* Header con bienvenida y foto de perfil */}
+    <View style={styles.mainContainer}>
+      <StatusBar barStyle="light-content" backgroundColor="#2A5A8D" />
+
+      {/* Header Compacto Moderno */}
       <View style={styles.header}>
-        <View style={styles.headerTop}>
+        <View style={styles.headerContent}>
           <View>
+            <Text style={styles.welcomeText}>Bienvenido,</Text>
             <Text style={styles.userName}>
               {user?.nombre} {user?.ap_paterno}
             </Text>
             <Text style={styles.userRole}>Pasante</Text>
           </View>
 
-          <TouchableOpacity
-            style={styles.avatarButton}
-            onPress={() => setMenuVisible(!menuVisible)}
-          >
-            {user?.avatar_url ? (
-              <Image source={{ uri: user.avatar_url }} style={styles.avatar} />
-            ) : (
-              <View style={styles.avatarPlaceholder}>
-                <Text style={styles.avatarText}>
-                  {user?.nombre?.charAt(0)}
-                  {user?.ap_paterno?.charAt(0)}
-                </Text>
-              </View>
-            )}
-          </TouchableOpacity>
+          <View style={styles.headerRight}>
+            <NotificationBell />
+            <TouchableOpacity
+              style={styles.avatarButton}
+              onPress={() => setMenuVisible(!menuVisible)}
+            >
+              {user?.avatar_url ? (
+                <Image
+                  source={{ uri: user.avatar_url }}
+                  style={styles.avatar}
+                />
+              ) : (
+                <View style={styles.avatarPlaceholder}>
+                  <Text style={styles.avatarText}>
+                    {user?.nombre?.charAt(0)}
+                    {user?.ap_paterno?.charAt(0)}
+                  </Text>
+                </View>
+              )}
+            </TouchableOpacity>
+          </View>
         </View>
 
+        {/* Dropdown Menu */}
         {menuVisible && (
           <View style={styles.dropdownMenu}>
-            <TouchableOpacity
-              style={styles.menuItem}
+            <MenuItem
+              label="👤 Mi Perfil"
               onPress={() => {
                 setMenuVisible(false);
                 navigation.navigate("Perfil");
               }}
-            >
-              <Text style={styles.menuItemText}>👤 Mi Perfil</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.menuItem}
+            />
+            <MenuItem
+              label="⚙️ Mi Cuenta"
               onPress={() => {
                 setMenuVisible(false);
                 navigation.navigate("Cuenta");
               }}
-            >
-              <Text style={styles.menuItemText}>⚙️ Mi Cuenta</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={[styles.menuItem, styles.menuItemLogout]}
+            />
+            <MenuItem
+              label="🚪 Cerrar Sesión"
               onPress={() => {
                 setMenuVisible(false);
                 handleLogout();
               }}
-            >
-              <Text style={styles.menuItemLogoutText}>🚪 Cerrar Sesión</Text>
-            </TouchableOpacity>
+              isLogout
+            />
           </View>
         )}
       </View>
 
-      {/* Accesos Rápidos */}
-      <View style={styles.quickActionsContainer}>
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
+        contentContainerStyle={styles.scrollContent}
+      >
+        {/* Accesos Rápidos */}
         <Text style={styles.sectionTitle}>Accesos Rápidos</Text>
         <View style={styles.quickActionsGrid}>
           <QuickActionButton
@@ -171,224 +182,190 @@ export default function DashboardPasanteScreen({ navigation }) {
             onPress={() => navigation.navigate("Mensajes")}
             color="#8B5CF6"
           />
-          {/* <QuickActionButton
-            icon="✅"
-            label="Inscripciones Finalizadas"
-            onPress={() => navigation.navigate("InscripcionesFinalizadas")}
-            color="#3C9087"
-          /> */}
-          {/* <QuickActionButton
-            icon="📅"
-            label="Mis Actividades"
-            onPress={() => navigation.navigate("Actividades")}
-            color="#8B5CF6"
-          /> */}
-        </View>
-      </View>
-
-      {/* Información académica */}
-      <View style={styles.infoCard}>
-        <Text style={styles.infoTitle}>🎓 Información Académica</Text>
-
-        <View style={styles.infoRow}>
-          <Text style={styles.infoLabel}>Semestre:</Text>
-          <Text style={[styles.infoValue, styles.textFlexible]}>
-            {" "}
-            {pasanteInfo.semestre || "No registrado"}
-          </Text>
         </View>
 
-        <View style={styles.infoRow}>
-          <Text style={styles.infoLabel}>Mención:</Text>
-          {/* Añadimos un contenedor flexible o aplicamos flex: 1 directamente al Text */}
-          <Text style={[styles.infoValue, styles.textFlexible]}>
-            {"  "}
-            {pasanteInfo.mencion || "No registrada"}
-          </Text>
+        {/* Información académica estilizada */}
+        <View style={styles.infoCard}>
+          <Text style={styles.infoTitle}>🎓 Información Académica</Text>
+
+          <View style={styles.infoRow}>
+            <Text style={styles.infoLabel}>Semestre</Text>
+            <Text style={[styles.infoValue, styles.textFlexible]}>
+              {pasanteInfo.semestre || "No registrado"}
+            </Text>
+          </View>
+
+          <View style={styles.infoRowContainer}>
+            <Text style={styles.infoLabel}>Mención</Text>
+            <Text style={[styles.infoValue, styles.textFlexible]}>
+              {pasanteInfo.mencion || "No registrada"}
+            </Text>
+          </View>
         </View>
-      </View>
-    </ScrollView>
+      </ScrollView>
+    </View>
   );
 }
 
-// ... estilos (se mantienen igual que antes)
+// Sub-componente para menú
+const MenuItem = ({ label, onPress, isLogout }) => (
+  <TouchableOpacity style={styles.menuItem} onPress={onPress}>
+    <Text style={[styles.menuItemText, isLogout && { color: "#dc2626" }]}>
+      {label}
+    </Text>
+  </TouchableOpacity>
+);
+
+// --- Estilos ---
+
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#f5f5f5",
-  },
-  center: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-  },
+  mainContainer: { flex: 1, backgroundColor: "#F8F9FA" },
+  scrollContent: { padding: 20, paddingBottom: 40 },
+  center: { flex: 1, justifyContent: "center", alignItems: "center" },
+
+  // Header Optimizado (Compacto)
   header: {
     backgroundColor: "#2A5A8D",
+    paddingTop: 20,
+    paddingBottom: 25,
     paddingHorizontal: 20,
-    paddingTop: 50,
-    paddingBottom: 30,
     borderBottomLeftRadius: 24,
     borderBottomRightRadius: 24,
   },
-  headerTop: {
+  headerContent: {
     flexDirection: "row",
     justifyContent: "space-between",
-    alignItems: "flex-start",
+    alignItems: "center",
   },
-  welcomeText: {
-    color: "#fff",
-    fontSize: 14,
-    opacity: 0.8,
-  },
-  userName: {
-    color: "#fff",
-    fontSize: 24,
-    fontWeight: "bold",
-    marginTop: 4,
-  },
-  userRole: {
-    color: "#fff",
-    fontSize: 14,
-    marginTop: 4,
-    opacity: 0.7,
-  },
-  avatarButton: {
-    padding: 4,
-  },
+  welcomeText: { color: "#E0E7FF", fontSize: 14, fontWeight: "500" },
+  userName: { color: "#FFF", fontSize: 22, fontWeight: "bold", marginTop: 2 },
+  userRole: { color: "#A5B4FC", fontSize: 13, marginTop: 4 },
+  avatarButton: { marginLeft: 10 },
   avatar: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
+    width: 45,
+    height: 45,
+    borderRadius: 22,
     borderWidth: 2,
-    borderColor: "#fff",
+    borderColor: "#FFF",
   },
   avatarPlaceholder: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
-    backgroundColor: "#fff",
+    width: 45,
+    height: 45,
+    borderRadius: 22,
+    backgroundColor: "#FFF",
     justifyContent: "center",
     alignItems: "center",
-    borderWidth: 2,
-    borderColor: "#fff",
   },
-  avatarText: {
-    fontSize: 18,
-    fontWeight: "bold",
-    color: "#2A5A8D",
-  },
+  avatarText: { fontWeight: "bold", color: "#2A5A8D" },
+  headerRight: { flexDirection: "row", alignItems: "center" },
+
+  // Dropdown
   dropdownMenu: {
     position: "absolute",
-    top: 70,
-    right: 16,
-    backgroundColor: "#fff",
+    top: 75,
+    right: 20,
+    backgroundColor: "#FFF",
     borderRadius: 12,
-    paddingVertical: 8,
+    padding: 5,
     shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.1,
-    shadowRadius: 8,
+    shadowRadius: 10,
     elevation: 5,
-    minWidth: 160,
-    zIndex: 1000,
+    width: 150,
+    zIndex: 10,
   },
-  menuItem: {
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-  },
-  menuItemText: {
-    fontSize: 14,
-    color: "#333",
-  },
-  menuItemLogout: {
-    borderTopWidth: 1,
-    borderTopColor: "#eee",
-  },
-  menuItemLogoutText: {
-    fontSize: 14,
-    color: "#dc2626",
-  },
-  quickActionsContainer: {
-    padding: 16,
-  },
+  menuItem: { padding: 12 },
+  menuItemText: { fontSize: 14, color: "#333" },
+
+  // Secciones
   sectionTitle: {
     fontSize: 18,
-    fontWeight: "bold",
-    color: "#1a2a3a",
-    marginBottom: 16,
+    fontWeight: "700",
+    color: "#1E293B",
+    marginBottom: 15,
+    marginTop: 5,
   },
+
+  // Quick Actions Grid
   quickActionsGrid: {
     flexDirection: "row",
     flexWrap: "wrap",
     justifyContent: "space-between",
   },
   quickActionCard: {
-    backgroundColor: "#fff",
+    backgroundColor: "#FFF",
     width: "48%",
-    paddingVertical: 20,
-    borderRadius: 12,
+    padding: 20,
+    borderRadius: 16,
     alignItems: "center",
-    marginBottom: 12,
+    marginBottom: 15,
     shadowColor: "#000",
+    shadowOpacity: 0.03,
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
     elevation: 2,
   },
   quickActionIconCircle: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
+    width: 45,
+    height: 45,
+    borderRadius: 12,
     justifyContent: "center",
     alignItems: "center",
     marginBottom: 10,
   },
-  quickActionIcon: {
-    fontSize: 28,
-  },
+  quickActionIcon: { fontSize: 24 },
   quickActionText: {
-    fontSize: 13,
-    fontWeight: "500",
-    color: "#333",
+    fontSize: 12,
+    fontWeight: "600",
+    color: "#334155",
     textAlign: "center",
   },
+
+  // Info Card Académica (Mejorada)
   infoCard: {
-    backgroundColor: "#fff",
-    margin: 16,
-    marginTop: 8,
-    padding: 16,
+    backgroundColor: "#FFF",
+    padding: 20,
     borderRadius: 16,
+    marginTop: 10,
     shadowColor: "#000",
+    shadowOpacity: 0.03,
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
     elevation: 2,
   },
   infoTitle: {
-    fontSize: 16,
-    fontWeight: "bold",
+    fontSize: 15,
+    fontWeight: "700",
     color: "#2A5A8D",
-    marginBottom: 12,
+    marginBottom: 15,
     borderBottomWidth: 1,
-    borderBottomColor: "#eee",
-    paddingBottom: 8,
+    borderBottomColor: "#F1F5F9",
+    paddingBottom: 10,
   },
   infoRow: {
     flexDirection: "row",
     justifyContent: "space-between",
-    paddingVertical: 8,
+    alignItems: "center",
+    paddingBy: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: "#F8FAFC",
+    paddingBottom: 12,
+    marginBottom: 12,
+  },
+  infoRowContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
   },
   infoLabel: {
-    fontSize: 14,
-    color: "#666",
+    fontSize: 13,
+    fontWeight: "600",
+    color: "#64748B",
+    textTransform: "uppercase",
   },
   infoValue: {
     fontSize: 14,
-    fontWeight: "500",
-    color: "#333",
+    fontWeight: "600",
+    color: "#334155",
+    textAlign: "right",
   },
-  textFlexible: {
-    flex: 1, // 👈 ¡ESTA ES LA MAGIA! Fuerza al texto a quedarse dentro de los límites y saltar de línea
-    flexWrap: "wrap", // Opcional: refuerza el comportamiento de salto de línea
-  },
+  textFlexible: { flex: 1, marginLeft: 20 },
 });

@@ -9,6 +9,7 @@ import PerfilPasanteScreen from "../screens/pasante/PerfilPasanteScreen";
 import CuentaPasanteScreen from "../screens/pasante/CuentaPasanteScreen";
 import CalendarioActividadesScreen from "../screens/pasante/CalendarioActividadesScreen";
 import MensajesScreen from "../screens/pasante/MensajesScreen";
+import NotificacionesScreen from "../screens/common/NotificacionesScreen";
 
 const Stack = createStackNavigator();
 
@@ -50,6 +51,11 @@ export default function PasanteStack() {
         name="CalendarioActividades"
         component={CalendarioActividadesScreen}
         options={{ title: "Actividades" }}
+      />
+      <Stack.Screen
+        name="Notificaciones"
+        component={NotificacionesScreen}
+        options={{ title: "Notificaciones" }}
       />
       <Stack.Screen
         name="Mensajes"

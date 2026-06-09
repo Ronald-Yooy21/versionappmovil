@@ -9,28 +9,43 @@ import {
   RefreshControl,
   Alert,
   Image,
+  StatusBar,
+  SafeAreaView,
 } from "react-native";
 import { useAuth } from "../../context/AuthContext";
 import api from "../../services/api";
+import NotificationBell from "../../components/NotificationBell";
+
+// --- Componentes ---
 
 const KpiCard = ({ label, value, icon, color }) => (
-  <View style={[styles.kpiCard, { borderLeftColor: color }]}>
-    <Text style={styles.kpiValue}>{value}</Text>
-    <Text style={styles.kpiLabel}>{label}</Text>
-    <Text style={styles.kpiIcon}>{icon}</Text>
+  <View style={styles.kpiCard}>
+    <View style={[styles.iconContainer, { backgroundColor: `${color}15` }]}>
+      <Text style={{ fontSize: 20 }}>{icon}</Text>
+    </View>
+    <View style={styles.kpiContent}>
+      <Text style={styles.kpiValue}>{value}</Text>
+      <Text style={styles.kpiLabel}>{label}</Text>
+    </View>
   </View>
 );
 
 const QuickActionButton = ({ icon, label, onPress, color }) => (
-  <TouchableOpacity style={styles.quickActionCard} onPress={onPress}>
+  <TouchableOpacity
+    style={styles.quickActionCard}
+    onPress={onPress}
+    activeOpacity={0.7}
+  >
     <View
-      style={[styles.quickActionIconCircle, { backgroundColor: color + "15" }]}
+      style={[styles.quickActionIconCircle, { backgroundColor: `${color}15` }]}
     >
       <Text style={styles.quickActionIcon}>{icon}</Text>
     </View>
     <Text style={styles.quickActionText}>{label}</Text>
   </TouchableOpacity>
 );
+
+// --- Pantalla Principal ---
 
 export default function DashboardGerenteScreen({ navigation }) {
   const { user, logout, refreshUser } = useAuth();
@@ -57,8 +72,8 @@ export default function DashboardGerenteScreen({ navigation }) {
 
   const onRefresh = async () => {
     setRefreshing(true);
-    await refreshUser(); // ← Actualizar datos del usuario
-    await cargarEstadisticas(); // ← Recargar estadísticas
+    await refreshUser();
+    await cargarEstadisticas();
     setRefreshing(false);
   };
 
@@ -69,12 +84,7 @@ export default function DashboardGerenteScreen({ navigation }) {
   const handleLogout = () => {
     Alert.alert("Cerrar Sesión", "¿Estás seguro de que deseas salir?", [
       { text: "Cancelar", style: "cancel" },
-      {
-        text: "Sí, cerrar sesión",
-        onPress: async () => {
-          await logout();
-        },
-      },
+      { text: "Sí, cerrar sesión", onPress: async () => await logout() },
     ]);
   };
 
@@ -87,102 +97,108 @@ export default function DashboardGerenteScreen({ navigation }) {
   }
 
   return (
-    <ScrollView
-      style={styles.container}
-      refreshControl={
-        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-      }
-    >
-      {/* Header con bienvenida y foto de perfil */}
+    <View style={styles.mainContainer}>
+      <StatusBar barStyle="light-content" backgroundColor="#2A5A8D" />
+
+      {/* Header Ajustado con SafeAreaView */}
       <View style={styles.header}>
-        <View style={styles.headerTop}>
-          <View>
-            <Text style={styles.userName}>
-              {user?.nombre} {user?.ap_paterno}
-            </Text>
-            <Text style={styles.userRole}>Gerente de Empresa</Text>
+        <SafeAreaView>
+          <View style={styles.headerContent}>
+            <View>
+              <Text style={styles.welcomeText}>Bienvenido,</Text>
+              <Text style={styles.userName}>{user?.nombre || "Usuario"}</Text>
+              <Text style={styles.userRole}>Gerente de Empresa</Text>
+            </View>
+            <View style={styles.headerRight}>
+              <NotificationBell />
+              <TouchableOpacity
+                style={styles.avatarButton}
+                onPress={() => setMenuVisible(!menuVisible)}
+              >
+                {user?.avatar_url ? (
+                  <Image
+                    source={{ uri: user.avatar_url }}
+                    style={styles.avatar}
+                  />
+                ) : (
+                  <View style={styles.avatarPlaceholder}>
+                    <Text style={styles.avatarText}>
+                      {user?.nombre?.charAt(0)}
+                      {user?.ap_paterno?.charAt(0)}
+                    </Text>
+                  </View>
+                )}
+              </TouchableOpacity>
+            </View>
           </View>
+        </SafeAreaView>
 
-          <TouchableOpacity
-            style={styles.avatarButton}
-            onPress={() => setMenuVisible(!menuVisible)}
-          >
-            {user?.avatar_url ? (
-              <Image source={{ uri: user.avatar_url }} style={styles.avatar} />
-            ) : (
-              <View style={styles.avatarPlaceholder}>
-                <Text style={styles.avatarText}>
-                  {user?.nombre?.charAt(0)}
-                  {user?.ap_paterno?.charAt(0)}
-                </Text>
-              </View>
-            )}
-          </TouchableOpacity>
-        </View>
-
+        {/* Dropdown Menu recalculado */}
         {menuVisible && (
           <View style={styles.dropdownMenu}>
-            <TouchableOpacity
-              style={styles.menuItem}
+            <MenuItem
+              label="👤 Mi Perfil"
               onPress={() => {
                 setMenuVisible(false);
                 navigation.navigate("Perfil");
               }}
-            >
-              <Text style={styles.menuItemText}>👤 Mi Perfil</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.menuItem}
+            />
+            <MenuItem
+              label="⚙️ Mi Cuenta"
               onPress={() => {
                 setMenuVisible(false);
                 navigation.navigate("Cuenta");
               }}
-            >
-              <Text style={styles.menuItemText}>⚙️ Mi Cuenta</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={[styles.menuItem, styles.menuItemLogout]}
+            />
+            <MenuItem
+              label="🚪 Cerrar Sesión"
               onPress={() => {
                 setMenuVisible(false);
                 handleLogout();
               }}
-            >
-              <Text style={styles.menuItemLogoutText}>🚪 Cerrar Sesión</Text>
-            </TouchableOpacity>
+              isLogout
+            />
           </View>
         )}
       </View>
 
-      {/* Tarjetas KPI */}
-      <View style={styles.kpiContainer}>
-        <KpiCard
-          label="Total Pasantías"
-          value={stats.total_pasantias}
-          icon="📋"
-          color="#2A5A8D"
-        />
-        <KpiCard
-          label="Total Pasantes"
-          value={stats.total_pasantes}
-          icon="👨‍🎓"
-          color="#3890BB"
-        />
-        <KpiCard
-          label="Total Jefes"
-          value={stats.total_jefes}
-          icon="👔"
-          color="#3C9087"
-        />
-        <KpiCard
-          label="Calificación Promedio"
-          value={`${stats.calificacion_promedio} ⭐`}
-          icon="⭐"
-          color="#F59E0B"
-        />
-      </View>
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
+        contentContainerStyle={styles.scrollContent}
+      >
+        {/* KPI Section */}
+        <Text style={styles.sectionTitle}>Estadísticas:</Text>
+        <View style={styles.kpiContainer}>
+          <KpiCard
+            label="Pasantías"
+            value={stats.total_pasantias}
+            icon="📋"
+            color="#2A5A8D"
+          />
+          <KpiCard
+            label="Pasantes"
+            value={stats.total_pasantes}
+            icon="👨‍🎓"
+            color="#3890BB"
+          />
+          <KpiCard
+            label="Jefes"
+            value={stats.total_jefes}
+            icon="👔"
+            color="#3C9087"
+          />
+          <KpiCard
+            label="Calificación"
+            value={`${stats.calificacion_promedio} ⭐`}
+            icon="⭐"
+            color="#F59E0B"
+          />
+        </View>
 
-      {/* Accesos Rápidos */}
-      <View style={styles.quickActionsContainer}>
+        {/* Quick Actions */}
         <Text style={styles.sectionTitle}>Accesos Rápidos</Text>
         <View style={styles.quickActionsGrid}>
           <QuickActionButton
@@ -193,204 +209,172 @@ export default function DashboardGerenteScreen({ navigation }) {
           />
           <QuickActionButton
             icon="📝"
-            label="Publicar Pasantía"
+            label="Publicar"
             onPress={() => navigation.navigate("CrearPasantia")}
             color="#3C9087"
           />
           <QuickActionButton
             icon="📋"
-            label="Pasantías Publicadas"
+            label="Pasantías"
             onPress={() => navigation.navigate("Pasantias")}
             color="#3890BB"
           />
           <QuickActionButton
             icon="👥"
-            label="Lista de Jefes"
+            label="Lista Jefes"
             onPress={() => navigation.navigate("Jefes")}
             color="#8B5CF6"
           />
         </View>
-      </View>
-    </ScrollView>
+      </ScrollView>
+    </View>
   );
 }
 
+// Sub-componente para menú
+const MenuItem = ({ label, onPress, isLogout }) => (
+  <TouchableOpacity style={styles.menuItem} onPress={onPress}>
+    <Text style={[styles.menuItemText, isLogout && { color: "#dc2626" }]}>
+      {label}
+    </Text>
+  </TouchableOpacity>
+);
+
+// --- Estilos ---
+
 const styles = StyleSheet.create({
-  // ... todos los estilos se mantienen igual que antes
-  container: {
-    flex: 1,
-    backgroundColor: "#f5f5f5",
-  },
-  center: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-  },
+  mainContainer: { flex: 1, backgroundColor: "#F8F9FA" },
+  scrollContent: { padding: 20, paddingBottom: 40 },
+  center: { flex: 1, justifyContent: "center", alignItems: "center" },
+
+  // Header optimizado
   header: {
     backgroundColor: "#2A5A8D",
+    paddingTop: 15, // Reducido drásticamente gracias al uso de SafeAreaView
     paddingHorizontal: 20,
-    paddingTop: 50,
-    paddingBottom: 30,
-    borderBottomLeftRadius: 24,
-    borderBottomRightRadius: 24,
+    paddingBottom: 25,
+    borderBottomLeftRadius: 30,
+    borderBottomRightRadius: 30,
   },
-  headerTop: {
+  headerContent: {
     flexDirection: "row",
     justifyContent: "space-between",
-    alignItems: "flex-start",
+    alignItems: "center",
   },
-  welcomeText: {
-    color: "#fff",
-    fontSize: 14,
-    opacity: 0.8,
-  },
-  userName: {
-    color: "#fff",
-    fontSize: 24,
-    fontWeight: "bold",
-    marginTop: 4,
-  },
-  userRole: {
-    color: "#fff",
-    fontSize: 14,
-    marginTop: 4,
-    opacity: 0.7,
-  },
-  avatarButton: {
-    padding: 4,
-  },
+  welcomeText: { color: "#E0E7FF", fontSize: 14, fontWeight: "500" },
+  userName: { color: "#FFF", fontSize: 22, fontWeight: "bold", marginTop: 2 },
+  userRole: { color: "#A5B4FC", fontSize: 13, marginTop: 4 },
+  avatarButton: { marginLeft: 10 },
   avatar: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
+    width: 45,
+    height: 45,
+    borderRadius: 22,
     borderWidth: 2,
-    borderColor: "#fff",
+    borderColor: "#FFF",
   },
   avatarPlaceholder: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
-    backgroundColor: "#fff",
+    width: 45,
+    height: 45,
+    borderRadius: 22,
+    backgroundColor: "#FFF",
     justifyContent: "center",
     alignItems: "center",
-    borderWidth: 2,
-    borderColor: "#fff",
   },
-  avatarText: {
-    fontSize: 18,
-    fontWeight: "bold",
-    color: "#2A5A8D",
-  },
+  avatarText: { fontWeight: "bold", color: "#2A5A8D" },
+  headerRight: { flexDirection: "row", alignItems: "center" },
+
+  // Dropdown ajustado para una posición óptima
   dropdownMenu: {
     position: "absolute",
-    top: 70,
-    right: 16,
-    backgroundColor: "#fff",
+    top: 75,
+    right: 20,
+    backgroundColor: "#FFF",
     borderRadius: 12,
-    paddingVertical: 8,
+    padding: 5,
     shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.1,
-    shadowRadius: 8,
+    shadowRadius: 10,
     elevation: 5,
-    minWidth: 160,
-    zIndex: 1000,
+    width: 150,
+    zIndex: 10,
   },
-  menuItem: {
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-  },
-  menuItemText: {
-    fontSize: 14,
-    color: "#333",
-  },
-  menuItemLogout: {
-    borderTopWidth: 1,
-    borderTopColor: "#eee",
-  },
-  menuItemLogoutText: {
-    fontSize: 14,
-    color: "#dc2626",
+  menuItem: { padding: 12 },
+  menuItemText: { fontSize: 14, color: "#333" },
+
+  // KPI
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: "700",
+    color: "#1E293B",
+    marginBottom: 15,
+    marginTop: 10,
   },
   kpiContainer: {
     flexDirection: "row",
     flexWrap: "wrap",
     justifyContent: "space-between",
-    paddingHorizontal: 16,
-    marginTop: -20,
+    marginBottom: 10,
   },
   kpiCard: {
-    backgroundColor: "#fff",
+    backgroundColor: "#FFF",
     width: "48%",
-    padding: 16,
-    borderRadius: 12,
-    marginBottom: 12,
+    padding: 15,
+    borderRadius: 16,
+    marginBottom: 15,
+    flexDirection: "row",
+    alignItems: "center",
     shadowColor: "#000",
+    shadowOpacity: 0.03,
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
     elevation: 2,
-    borderLeftWidth: 4,
   },
-  kpiValue: {
-    fontSize: 28,
-    fontWeight: "bold",
-    color: "#1a2a3a",
+  iconContainer: {
+    width: 35,
+    height: 35,
+    borderRadius: 10,
+    justifyContent: "center",
+    alignItems: "center",
+    marginRight: 10,
   },
+  kpiValue: { fontSize: 18, fontWeight: "bold", color: "#1E293B" },
   kpiLabel: {
-    fontSize: 12,
-    color: "#666",
-    marginTop: 4,
+    fontSize: 11,
+    color: "#64748B",
+    textTransform: "uppercase",
+    fontWeight: "600",
   },
-  kpiIcon: {
-    fontSize: 24,
-    position: "absolute",
-    right: 12,
-    bottom: 12,
-    opacity: 0.3,
-  },
-  quickActionsContainer: {
-    padding: 16,
-  },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: "bold",
-    color: "#1a2a3a",
-    marginBottom: 16,
-  },
+
+  // Quick Actions
   quickActionsGrid: {
     flexDirection: "row",
     flexWrap: "wrap",
     justifyContent: "space-between",
   },
   quickActionCard: {
-    backgroundColor: "#fff",
+    backgroundColor: "#FFF",
     width: "48%",
-    paddingVertical: 20,
-    borderRadius: 12,
+    padding: 20,
+    borderRadius: 16,
     alignItems: "center",
-    marginBottom: 12,
+    marginBottom: 15,
     shadowColor: "#000",
+    shadowOpacity: 0.03,
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
     elevation: 2,
   },
   quickActionIconCircle: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
+    width: 45,
+    height: 45,
+    borderRadius: 12,
     justifyContent: "center",
     alignItems: "center",
     marginBottom: 10,
   },
-  quickActionIcon: {
-    fontSize: 28,
-  },
+  quickActionIcon: { fontSize: 24 },
   quickActionText: {
-    fontSize: 13,
-    fontWeight: "500",
-    color: "#333",
+    fontSize: 12,
+    fontWeight: "600",
+    color: "#334155",
     textAlign: "center",
   },
 });

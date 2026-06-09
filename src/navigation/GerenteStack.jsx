@@ -7,6 +7,7 @@ import CrearPasantiaScreen from "../screens/gerente/CrearPasantiaScreen";
 import JefesScreen from "../screens/gerente/JefesScreen";
 import PerfilGerenteScreen from "../screens/gerente/PerfilGerenteScreen";
 import CuentaGerenteScreen from "../screens/gerente/CuentaGerenteScreen";
+import NotificacionesScreen from "../screens/common/NotificacionesScreen";
 
 const Stack = createStackNavigator();
 
@@ -38,6 +39,11 @@ export default function GerenteStack() {
         name="CrearPasantia"
         component={CrearPasantiaScreen}
         options={{ title: "Publicar Pasantia" }}
+      />
+      <Stack.Screen
+        name="Notificaciones"
+        component={NotificacionesScreen}
+        options={{ title: "Notificaciones" }}
       />
       <Stack.Screen
         name="Jefes"
