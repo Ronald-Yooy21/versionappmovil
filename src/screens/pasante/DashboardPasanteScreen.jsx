@@ -154,23 +154,23 @@ export default function DashboardPasanteScreen({ navigation }) {
             color="#2A5A8D"
           />
           <QuickActionButton
-            icon="📋"
+            icon="✅"
             label="Pasantías Inscritas"
             onPress={() => navigation.navigate("InscripcionesActivas")}
             color="#3890BB"
           />
-          <QuickActionButton
+          {/* <QuickActionButton
             icon="✅"
             label="Inscripciones Finalizadas"
             onPress={() => navigation.navigate("InscripcionesFinalizadas")}
             color="#3C9087"
-          />
-          <QuickActionButton
+          /> */}
+          {/* <QuickActionButton
             icon="📅"
             label="Mis Actividades"
             onPress={() => navigation.navigate("Actividades")}
             color="#8B5CF6"
-          />
+          /> */}
         </View>
       </View>
 

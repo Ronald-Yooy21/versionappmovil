@@ -42,7 +42,7 @@ export default function PasanteStack() {
       <Stack.Screen
         name="Actividades"
         component={ActividadesScreen}
-        options={{ title: "Calendario Actividades" }}
+        options={{ title: "Gestion de Actividades" }}
       />
       <Stack.Screen
         name="Perfil"
