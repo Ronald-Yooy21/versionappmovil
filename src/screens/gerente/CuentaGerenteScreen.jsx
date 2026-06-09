@@ -55,7 +55,7 @@ export default function CuentaGerenteScreen({ navigation }) {
   const guardarCambios = async () => {
     setLoading(true);
     try {
-      await api.put("/pasante/cuenta", form);
+      await api.put("/gerente/cuenta", form);
       await refreshUser();
       Alert.alert("Éxito", "Datos de cuenta actualizados correctamente");
       setEditando(false);
@@ -78,7 +78,7 @@ export default function CuentaGerenteScreen({ navigation }) {
 
     setLoading(true);
     try {
-      await api.put("/pasante/password", passwordForm);
+      await api.put("/gerente/password", passwordForm);
       Alert.alert("Éxito", "Contraseña actualizada correctamente");
       setCambiandoPassword(false);
       setPasswordForm({

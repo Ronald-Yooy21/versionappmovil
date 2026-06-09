@@ -7,6 +7,8 @@ import InscripcionesActivasScreen from "../screens/pasante/InscripcionesActivasS
 import ActividadesScreen from "../screens/pasante/ActividadesScreen";
 import PerfilPasanteScreen from "../screens/pasante/PerfilPasanteScreen";
 import CuentaPasanteScreen from "../screens/pasante/CuentaPasanteScreen";
+import CalendarioActividadesScreen from "../screens/pasante/CalendarioActividadesScreen";
+import MensajesScreen from "../screens/pasante/MensajesScreen";
 
 const Stack = createStackNavigator();
 
@@ -43,6 +45,16 @@ export default function PasanteStack() {
         name="Actividades"
         component={ActividadesScreen}
         options={{ title: "Gestion de Actividades" }}
+      />
+      <Stack.Screen
+        name="CalendarioActividades"
+        component={CalendarioActividadesScreen}
+        options={{ title: "Actividades" }}
+      />
+      <Stack.Screen
+        name="Mensajes"
+        component={MensajesScreen}
+        options={{ title: "Mensajes" }}
       />
       <Stack.Screen
         name="Perfil"

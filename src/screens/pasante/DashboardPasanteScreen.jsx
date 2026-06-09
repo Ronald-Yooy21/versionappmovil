@@ -159,6 +159,18 @@ export default function DashboardPasanteScreen({ navigation }) {
             onPress={() => navigation.navigate("InscripcionesActivas")}
             color="#3890BB"
           />
+          <QuickActionButton
+            icon="📅"
+            label="Calendario Actividades"
+            onPress={() => navigation.navigate("CalendarioActividades")}
+            color="#8B5CF6"
+          />
+          <QuickActionButton
+            icon="💬"
+            label="Mensajes"
+            onPress={() => navigation.navigate("Mensajes")}
+            color="#8B5CF6"
+          />
           {/* <QuickActionButton
             icon="✅"
             label="Inscripciones Finalizadas"

@@ -102,7 +102,7 @@ export default function LoginScreen() {
               <Text style={styles.loginButtonText}>INICIAR SESIÓN</Text>
             )}
           </TouchableOpacity>
-
+          {/* 
           <TouchableOpacity
             style={styles.loginButton}
             onPress={() => {}}
@@ -113,7 +113,7 @@ export default function LoginScreen() {
             ) : (
               <Text style={styles.loginButtonText}>REGISTRARSE</Text>
             )}
-          </TouchableOpacity>
+          </TouchableOpacity> */}
         </View>
       </View>
     </KeyboardAvoidingView>

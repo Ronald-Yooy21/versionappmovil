@@ -96,7 +96,7 @@ const ActividadCard = ({
               ]}
               onPress={() => onVerApuntes(actividad)}
             >
-              <Text style={styles.apunteButtonText}>📝 Mis apuntes</Text>
+              <Text style={styles.apunteButtonText}>📝 Mi progreso</Text>
             </TouchableOpacity>
 
             <TouchableOpacity
