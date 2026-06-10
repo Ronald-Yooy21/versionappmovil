@@ -6,6 +6,7 @@ import { AuthProvider, useAuth } from "./src/context/AuthContext";
 import LoginScreen from "./src/screens/auth/LoginScreen";
 import GerenteStack from "./src/navigation/GerenteStack";
 import PasanteStack from "./src/navigation/PasanteStack";
+import AdminStack from "./src/navigation/AdminStack";
 
 const Stack = createStackNavigator();
 
@@ -40,6 +41,8 @@ function AppNavigator() {
         <Stack.Screen name="Pasante" component={PasanteStack} />
       ) : user.rol === "jefe" ? (
         <Stack.Screen name="Jefe" component={JefeStack} />
+      ) : user.rol === "admin" ? (
+        <Stack.Screen name="admin" component={AdminStack} />
       ) : (
         <Stack.Screen name="Main" component={MainScreen} />
       )}
