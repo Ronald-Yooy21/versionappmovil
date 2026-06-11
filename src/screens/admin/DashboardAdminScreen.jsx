@@ -7,6 +7,7 @@ import {
   ActivityIndicator,
   RefreshControl,
   StatusBar,
+  Alert,
 } from "react-native";
 import { useAuth } from "../../context/AuthContext";
 import api from "../../services/api";
@@ -17,7 +18,7 @@ import SimpleBarChart from "../../components/charts/SimpleBarChart";
 import CommentCard from "../../components/common/CommentCard";
 
 export default function DashboardAdminScreen({ navigation }) {
-  const { user, refreshUser } = useAuth();
+  const { user, logout, refreshUser } = useAuth();
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -68,11 +69,17 @@ export default function DashboardAdminScreen({ navigation }) {
           [
             // Menú personalizado sin pantallas de perfil/cuenta por ahora (solo cerrar sesión)
             {
+              label: "👤 Mi Perfil",
+              onPress: () => {
+                // setMenuVisible(false); // si se maneja internamente
+                navigation.navigate("PerfilAdmin");
+              },
+            },
+            {
               label: "🚪 Cerrar Sesión",
               isLogout: true,
               onPress: () => {
                 // Lógica de logout usando contexto
-                const { logout } = require("../../context/AuthContext").useAuth;
                 Alert.alert("Cerrar Sesión", "¿Estás seguro?", [
                   { text: "Cancelar", style: "cancel" },
                   {
@@ -99,19 +106,9 @@ export default function DashboardAdminScreen({ navigation }) {
           <KpiCard label="Usuarios" value={stats.usuarios} icon="👥" color="#2A5A8D" />
           <KpiCard label="Pasantes" value={stats.pasantes} icon="👨‍🎓" color="#3890BB" />
           <KpiCard label="Empresas" value={stats.empresas} icon="🏢" color="#3C9087" />
-          <KpiCard label="Pasantías Activas" value={stats.pasantias_activas} icon="📋" color="#F59E0B" />
+          {/* <KpiCard label="Pasantías Activas" value={stats.pasantias_activas} icon="📋" color="#F59E0B" /> */}
           <KpiCard label="Solicitudes Pend." value={stats.solicitudes_pendientes} icon="⏳" color="#8B5CF6" />
         </View>
-
-        {/* Distribución de roles */}
-        <Text style={styles.sectionTitle}>Distribución de Roles</Text>
-        <SimpleBarChart data={distribucion_roles} />
-
-        {/* Últimos comentarios */}
-        <Text style={styles.sectionTitle}>Últimos Comentarios</Text>
-        {ultimos_comentarios?.map((comentario) => (
-          <CommentCard key={comentario.id} {...comentario} />
-        ))}
 
         {/* Accesos rápidos */}
         <Text style={styles.sectionTitle}>Accesos Rápidos</Text>
@@ -129,6 +126,16 @@ export default function DashboardAdminScreen({ navigation }) {
             color="#8B5CF6"
           />
         </View>
+
+        {/* Distribución de roles */}
+        <Text style={styles.sectionTitle}>Distribución de Roles</Text>
+        <SimpleBarChart data={distribucion_roles} />
+
+        {/* Últimos comentarios */}
+        <Text style={styles.sectionTitle}>Últimos Comentarios</Text>
+        {ultimos_comentarios?.map((comentario) => (
+          <CommentCard key={comentario.id} {...comentario} />
+        ))}
       </ScrollView>
     </View>
   );

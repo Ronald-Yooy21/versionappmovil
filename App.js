@@ -4,16 +4,19 @@ import { createStackNavigator } from "@react-navigation/stack";
 import { ActivityIndicator, View } from "react-native";
 import { AuthProvider, useAuth } from "./src/context/AuthContext";
 import LoginScreen from "./src/screens/auth/LoginScreen";
+import RegisterScreen from "./src/screens/auth/RegisterScreen";
+import RegistroPendienteScreen from "./src/screens/auth/RegistroPendienteScreen";
 import GerenteStack from "./src/navigation/GerenteStack";
 import PasanteStack from "./src/navigation/PasanteStack";
 import AdminStack from "./src/navigation/AdminStack";
+import JefeStack from "./src/navigation/JefeStack";
 
 const Stack = createStackNavigator();
 
 function AppNavigator() {
   const { user, checkAuth } = useAuth();
   const [isChecking, setIsChecking] = useState(true);
-
+  
   useEffect(() => {
     const loadAuth = async () => {
       await checkAuth();
@@ -33,14 +36,18 @@ function AppNavigator() {
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
       {!user ? (
-        <Stack.Screen name="Login" component={LoginScreen} />
+        <>
+          <Stack.Screen name="Login" component={LoginScreen} />
+          <Stack.Screen name="Register" component={RegisterScreen} />
+          <Stack.Screen name="RegistroPendiente" component={RegistroPendienteScreen} />
+        </>
       ) : // Según el rol, mostramos un stack diferente
       user.rol === "gerente" ? (
         <Stack.Screen name="Gerente" component={GerenteStack} />
       ) : user.rol === "pasante" ? (
         <Stack.Screen name="Pasante" component={PasanteStack} />
       ) : user.rol === "jefe" ? (
-        <Stack.Screen name="Jefe" component={JefeStack} />
+        <Stack.Screen name="jefe" component={JefeStack} />
       ) : user.rol === "admin" ? (
         <Stack.Screen name="admin" component={AdminStack} />
       ) : (

@@ -30,12 +30,26 @@ export default function SolicitudesScreen() {
   }, []);
 
   const manejarSolicitud = async (id, accion) => {
+    // Aseguramos que la acción sea 'aprobado' o 'rechazado' para el backend
+    const estadoBackend = accion === "aprobar" ? "aprobado" : "rechazado";
+
     try {
-      await api.post(`/admin/solicitudes/${id}/${accion}`);
+      // Enviamos el estado correcto esperado por Laravel
+      await api.patch(`/admin/users/${id}/procesar-aprobacion`, { 
+        estado: estadoBackend 
+      });
+      
+      // Filtramos el estado local usando el ID procesado
       setSolicitudes((prev) => prev.filter((s) => s.id !== id));
-      Alert.alert("Éxito", `Solicitud ${accion === "aprobar" ? "aprobada" : "rechazada"}`);
+      
+      Alert.alert(
+        "Éxito", 
+        `Solicitud ${estadoBackend === "aprobado" ? "aprobada" : "rechazada"} correctamente.`
+      );
     } catch (error) {
-      Alert.alert("Error", "No se pudo procesar la solicitud");
+      // Capturamos el mensaje de error enviado por el backend si existe
+      const mensajeError = error.response?.data?.error || "No se pudo procesar la solicitud";
+      Alert.alert("Error", mensajeError);
     }
   };
 

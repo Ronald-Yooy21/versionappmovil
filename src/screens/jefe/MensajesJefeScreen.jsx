@@ -19,11 +19,9 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useAuth } from "../../context/AuthContext";
 import api from "../../services/api";
 
-// Componente de burbuja de mensaje (igual)
 // Helper global para formatear hora respetando zona horaria local
 const formatHoraLocal = (horaStr) => {
   if (!horaStr) return "";
-  // Si viene como "HH:MM:SS" sin fecha, parsear como UTC para convertir a local
   const isTimeOnly = /^\d{2}:\d{2}(:\d{2})?$/.test(horaStr);
   const date = isTimeOnly
     ? new Date(`1970-01-01T${horaStr}Z`)
@@ -71,7 +69,6 @@ const BurbujaMensaje = ({ mensaje }) => {
   );
 };
 
-// Componente de tarjeta de contacto (igual)
 const ContactoCard = ({ contacto, isSelected, onPress }) => {
   const getInitials = () => {
     return `${contacto.ap_paterno?.charAt(0) || ""}${contacto.nombre?.charAt(0) || ""}`;
@@ -99,9 +96,7 @@ const ContactoCard = ({ contacto, isSelected, onPress }) => {
           <Text style={styles.contactoNombre}>
             {contacto.ap_paterno} {contacto.ap_materno}, {contacto.nombre}
           </Text>
-          <Text style={styles.contactoRol}>
-            {contacto.tipo === "jefe" ? "JEFE" : "PASANTE"}
-          </Text>
+          <Text style={styles.contactoRol}>PASANTE</Text>
         </View>
         <Text style={styles.contactoPasantia}>{contacto.pasantia_nombre}</Text>
         {contacto.ultimo_mensaje && (
@@ -120,7 +115,7 @@ const ContactoCard = ({ contacto, isSelected, onPress }) => {
   );
 };
 
-export default function MensajesScreen({ navigation }) {
+export default function MensajesJefeScreen({ navigation }) {
   const { user } = useAuth();
   const insets = useSafeAreaInsets();
   const [contactos, setContactos] = useState([]);
@@ -138,8 +133,9 @@ export default function MensajesScreen({ navigation }) {
 
   const cargarContactos = async () => {
     try {
-      const response = await api.get("/pasante/mensajes/contactos");
-      setContactos(response.data);
+      const response = await api.get("/jefe/mensajes");
+      // La respuesta es { contactosIniciales: [...] }
+      setContactos(response.data.contactosIniciales);
     } catch (error) {
       console.error("Error cargando contactos:", error);
       Alert.alert("Error", "No se pudieron cargar los contactos");
@@ -151,16 +147,13 @@ export default function MensajesScreen({ navigation }) {
 
   const cargarMensajes = async (contacto) => {
     if (!contacto) return;
-
     setLoadingMensajes(true);
     try {
-      const response = await api.get(
-        `/pasante/mensajes/${contacto.tipo}/${contacto.id_contacto}`,
-      );
+      const response = await api.get(`/jefe/mensajes/${contacto.id_contacto}`);
       setMensajes(response.data.mensajes);
       setContactoActivo({
         ...contacto,
-        info: response.data.contacto,
+        info: response.data.contacto, // { nombre, avatar_url, nombre_user }
       });
     } catch (error) {
       console.error("Error cargando mensajes:", error);
@@ -178,12 +171,9 @@ export default function MensajesScreen({ navigation }) {
   useEffect(() => {
     if (contactoActivo) {
       if (pollingInterval.current) clearInterval(pollingInterval.current);
-
       pollingInterval.current = setInterval(async () => {
         try {
-          const response = await api.get(
-            `/pasante/mensajes/${contactoActivo.tipo}/${contactoActivo.id_contacto}`,
-          );
+          const response = await api.get(`/jefe/mensajes/${contactoActivo.id_contacto}`);
           if (response.data.mensajes) {
             setMensajes(response.data.mensajes);
           }
@@ -191,33 +181,29 @@ export default function MensajesScreen({ navigation }) {
           console.error("Error en polling:", error);
         }
       }, 3000);
-
       return () => {
         if (pollingInterval.current) clearInterval(pollingInterval.current);
       };
     }
   }, [contactoActivo]);
 
-// 1. Scroll al último mensaje (CORREGIDO)
-useEffect(() => {
-  // Añadimos la comprobación scrollViewRef.current para evitar el crash
-  if (scrollViewRef.current && mensajes.length > 0) {
-    setTimeout(() => {
-      scrollViewRef.current?.scrollToEnd({ animated: true });
-    }, 100);
-  }
-}, [mensajes]);
+  // Scroll al último mensaje
+  useEffect(() => {
+    if (scrollViewRef.current && mensajes.length > 0) {
+      setTimeout(() => {
+        scrollViewRef.current.scrollToEnd({ animated: true });
+      }, 100);
+    }
+  }, [mensajes]);
 
-// 2. Cuando el teclado aparece (CORREGIDO)
-useEffect(() => {
-  const show = Keyboard.addListener("keyboardDidShow", () => {
-    setTimeout(() => {
-      // El operador ?. asegura que si es null, no rompa la aplicación
-      scrollViewRef.current?.scrollToEnd({ animated: true });
-    }, 150);
-  });
-  return () => show.remove();
-}, []);
+  useEffect(() => {
+    const show = Keyboard.addListener("keyboardDidShow", () => {
+      setTimeout(() => {
+        scrollViewRef.current?.scrollToEnd({ animated: true });
+      }, 150);
+    });
+    return () => show.remove();
+  }, []);
 
   const onRefresh = () => {
     setRefreshing(true);
@@ -240,28 +226,21 @@ useEffect(() => {
 
   const enviarMensaje = async () => {
     if (!nuevoMensaje.trim() || enviando || !contactoActivo) return;
-
     const texto = nuevoMensaje.trim();
     setNuevoMensaje("");
     setEnviando(true);
 
     try {
-      const response = await api.post("/pasante/mensajes", {
-        tipo: contactoActivo.tipo,
+      const response = await api.post("/jefe/mensajes", {
         id_contacto: contactoActivo.id_contacto,
         mensaje: texto,
       });
 
       if (response.data.success) {
         setMensajes((prev) => [...prev, response.data.mensaje]);
-
-        // Actualizar último mensaje en la lista de contactos
         setContactos((prev) =>
           prev.map((c) => {
-            if (
-              c.tipo === contactoActivo.tipo &&
-              c.id_contacto === contactoActivo.id_contacto
-            ) {
+            if (c.id_contacto === contactoActivo.id_contacto) {
               return {
                 ...c,
                 ultimo_mensaje: texto,
@@ -274,7 +253,7 @@ useEffect(() => {
               };
             }
             return c;
-          }),
+          })
         );
       }
     } catch (error) {
@@ -297,7 +276,6 @@ useEffect(() => {
   return (
     <SafeAreaView style={styles.safeArea}>
       {!contactoActivo ? (
-        // Lista de contactos
         <View style={styles.container}>
           <View style={styles.header}>
             <Text style={styles.headerTitle}>Mensajes</Text>
@@ -307,16 +285,12 @@ useEffect(() => {
           </View>
 
           <ScrollView
-            refreshControl={
-              <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-            }
+            refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
             showsVerticalScrollIndicator={false}
           >
             {contactos.length === 0 ? (
               <View style={styles.emptyContainer}>
-                <Text style={styles.emptyText}>
-                  No hay contactos disponibles
-                </Text>
+                <Text style={styles.emptyText}>No hay contactos disponibles</Text>
                 <Text style={styles.emptySubtext}>
                   Los contactos aparecerán cuando tengas pasantías activas
                 </Text>
@@ -324,7 +298,7 @@ useEffect(() => {
             ) : (
               contactos.map((contacto) => (
                 <ContactoCard
-                  key={`${contacto.tipo}_${contacto.id_contacto}`}
+                  key={contacto.id_contacto.toString()}
                   contacto={contacto}
                   isSelected={selectedContactoId === contacto.id_contacto}
                   onPress={() => seleccionarContacto(contacto)}
@@ -335,18 +309,15 @@ useEffect(() => {
           </ScrollView>
         </View>
       ) : (
-        // Pantalla de chat
         <KeyboardAvoidingView
           style={styles.chatContainer}
           behavior="padding"
           keyboardVerticalOffset={Platform.OS === "ios" ? 88 : 0}
         >
-          {/* Header del chat */}
           <View style={styles.chatHeader}>
             <TouchableOpacity onPress={volverALista} style={styles.backButton}>
               <Text style={styles.backButtonText}>←</Text>
             </TouchableOpacity>
-
             <View style={styles.chatHeaderInfo}>
               <View style={styles.chatHeaderAvatar}>
                 {contactoActivo.info?.avatar_url ? (
@@ -368,33 +339,22 @@ useEffect(() => {
                   {contactoActivo.ap_paterno} {contactoActivo.ap_materno},{" "}
                   {contactoActivo.nombre}
                 </Text>
-                <Text style={styles.chatHeaderRol}>
-                  {contactoActivo.tipo === "jefe"
-                    ? "Jefe de pasantía"
-                    : "Compañero pasante"}
-                </Text>
+                <Text style={styles.chatHeaderRol}>Pasante</Text>
               </View>
             </View>
           </View>
 
-          {/* Área de mensajes */}
           <ScrollView
             ref={scrollViewRef}
             style={styles.mensajesContainer}
             showsVerticalScrollIndicator={false}
           >
             {loadingMensajes ? (
-              <ActivityIndicator
-                size="large"
-                color="#2A5A8D"
-                style={styles.loader}
-              />
+              <ActivityIndicator size="large" color="#2A5A8D" style={styles.loader} />
             ) : mensajes.length === 0 ? (
               <View style={styles.emptyChatContainer}>
                 <Text style={styles.emptyChatText}>No hay mensajes</Text>
-                <Text style={styles.emptyChatSubtext}>
-                  Envía el primer mensaje
-                </Text>
+                <Text style={styles.emptyChatSubtext}>Envía el primer mensaje</Text>
               </View>
             ) : (
               mensajes.map((msg, index) => (
@@ -403,13 +363,7 @@ useEffect(() => {
             )}
           </ScrollView>
 
-          {/* Input de mensaje */}
-          <View
-            style={[
-              styles.inputWrapper,
-              { paddingBottom: Math.max(insets.bottom, 8) },
-            ]}
-          >
+          <View style={[styles.inputWrapper, { paddingBottom: Math.max(insets.bottom, 8) }]}>
             <View style={styles.inputContainer}>
               <TextInput
                 ref={inputRef}
@@ -420,10 +374,7 @@ useEffect(() => {
                 multiline
               />
               <TouchableOpacity
-                style={[
-                  styles.sendButton,
-                  !nuevoMensaje.trim() && styles.sendButtonDisabled,
-                ]}
+                style={[styles.sendButton, !nuevoMensaje.trim() && styles.sendButtonDisabled]}
                 onPress={enviarMensaje}
                 disabled={!nuevoMensaje.trim() || enviando}
               >
@@ -437,6 +388,7 @@ useEffect(() => {
   );
 }
 
+// Estilos idénticos a los de MensajesScreen (los mismos que proporcionaste)
 const styles = StyleSheet.create({
   safeArea: { flex: 1, backgroundColor: "#f5f5f5" },
   center: { flex: 1, justifyContent: "center", alignItems: "center" },
@@ -502,8 +454,6 @@ const styles = StyleSheet.create({
   emptyText: { fontSize: 16, color: "#999", marginBottom: 8 },
   emptySubtext: { fontSize: 13, color: "#bbb", textAlign: "center" },
   bottomSpacing: { height: 20 },
-
-  // Chat styles
   chatContainer: { flex: 1, backgroundColor: "#f5f5f5" },
   chatHeader: {
     flexDirection: "row",
@@ -527,12 +477,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   chatAvatarText: { fontSize: 16, fontWeight: "bold", color: "#fff" },
-  chatHeaderNombre: {
-    fontSize: 16,
-    fontWeight: "bold",
-    color: "#333",
-    flex: 1,
-  },
+  chatHeaderNombre: { fontSize: 16, fontWeight: "bold", color: "#333", flex: 1 },
   chatHeaderRol: { fontSize: 12, color: "#666" },
   mensajesContainer: { flex: 1, padding: 16, flexGrow: 1 },
   loader: { padding: 20 },

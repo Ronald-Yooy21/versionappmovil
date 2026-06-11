@@ -11,42 +11,64 @@ export default function QuickActionButton({ icon, label, onPress, color }) {
       <View
         style={[
           styles.quickActionIconCircle,
-          { backgroundColor: `${color}15` },
+          { 
+            backgroundColor: `${color}12`, // Fondo suave translúcido
+            borderColor: `${color}25`     // Borde de alta definición a juego
+          }
         ]}
       >
-        <Text style={styles.quickActionIcon}>{icon}</Text>
+        <Text style={[styles.quickActionIcon, { color: color }]}>{icon}</Text>
       </View>
-      <Text style={styles.quickActionText}>{label}</Text>
+      <Text style={styles.quickActionText} numberOfLines={2}>
+        {label}
+      </Text>
     </TouchableOpacity>
   );
 }
 
 const styles = StyleSheet.create({
   quickActionCard: {
-    backgroundColor: "#FFF",
+    backgroundColor: "#FFFFFF",
     width: "48%",
-    padding: 20,
-    borderRadius: 16,
+    paddingVertical: 18,
+    paddingHorizontal: 14,
+    borderRadius: 20, // Consistencia absoluta con las curvas del KpiCard anterior
     alignItems: "center",
-    marginBottom: 15,
-    shadowColor: "#000",
-    shadowOpacity: 0.03,
-    shadowOffset: { width: 0, height: 2 },
-    elevation: 2,
+    justifyContent: "center",
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: "#E2E8F0", // Slate 200 para encajar en el ecosistema limpio de tu app
+    
+    // Sombras premium de bajo contraste (iOS)
+    shadowColor: "#0F172A",
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.04,
+    shadowRadius: 14,
+    
+    // Sombra para Android
+    elevation: 3,
   },
   quickActionIconCircle: {
-    width: 45,
-    height: 45,
-    borderRadius: 12,
+    width: 48,
+    height: 48,
+    borderRadius: 16, // Forma escircle moderna
     justifyContent: "center",
     alignItems: "center",
-    marginBottom: 10,
+    borderWidth: 1,
+    marginBottom: 12,
   },
-  quickActionIcon: { fontSize: 24 },
-  quickActionText: {
-    fontSize: 12,
-    fontWeight: "600",
-    color: "#334155",
+  quickActionIcon: { 
+    fontSize: 22,
     textAlign: "center",
+    textAlignVertical: "center",
+    includeFontPadding: false,
+  },
+  quickActionText: {
+    fontSize: 13,
+    fontWeight: "700", // Peso más fuerte para detonar acción inmediata
+    color: "#0F172A",  // Slate 900 para máxima elegibilidad en dashboards móviles
+    textAlign: "center",
+    letterSpacing: -0.2,
+    lineHeight: 18,
   },
 });

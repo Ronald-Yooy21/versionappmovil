@@ -100,7 +100,10 @@ export default function DashboardHeader({
             <TouchableOpacity
               key={index}
               style={styles.menuItem}
-              onPress={item.onPress}
+              onPress={() => {
+                // setMenuVisible(false);
+                item.onPress();
+              }}
             >
               <Text
                 style={[

@@ -23,6 +23,9 @@ export const AuthProvider = ({ children }) => {
 
       const { user, token } = response.data;
 
+      console.log("User: ", user, ", Token: ", token);
+      
+
       // Guardar token en AsyncStorage
       await AsyncStorage.setItem("@SGP:token", token);
       await AsyncStorage.setItem("@SGP:user", JSON.stringify(user));

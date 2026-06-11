@@ -13,7 +13,7 @@ import {
 } from "react-native";
 import { useAuth } from "../../context/AuthContext";
 
-export default function LoginScreen() {
+export default function LoginScreen( { navigation } ) {
   const [loginInput, setLoginInput] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -96,16 +96,17 @@ export default function LoginScreen() {
             onPress={handleLogin}
             disabled={loading}
           >
+            
             {loading ? (
               <ActivityIndicator color="#fff" size="small" />
             ) : (
               <Text style={styles.loginButtonText}>INICIAR SESIÓN</Text>
             )}
           </TouchableOpacity>
-          {/* 
+          
           <TouchableOpacity
             style={styles.loginButton}
-            onPress={() => {}}
+            onPress={() => navigation.navigate("Register")}
             disabled={loading}
           >
             {loading ? (
@@ -113,7 +114,7 @@ export default function LoginScreen() {
             ) : (
               <Text style={styles.loginButtonText}>REGISTRARSE</Text>
             )}
-          </TouchableOpacity> */}
+          </TouchableOpacity>
         </View>
       </View>
     </KeyboardAvoidingView>
